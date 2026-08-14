@@ -1,0 +1,41 @@
+========================================================================
+STAGE-1 RANDOM FOREST GATE -- EVALUATION REPORT
+========================================================================
+
+--- AFTER (corrected config, full-data self-consistency check) ---
+Total providers:              5,410
+Positive providers:           506
+
+Gate threshold:                0.1409
+Target recall:                 95%
+Actual recall:                 94.9%
+Precision:                     34.1%
+F1:                            0.502
+
+Providers passed:             1,406
+Providers filtered:           4,004
+Pass rate:                     26.0%
+
+Positive providers retained:   480
+Positive providers lost:       26
+
+--- AFTER (honest 5-fold out-of-fold validation) ---
+Avg gate threshold across folds: 0.1368
+Out-of-fold recall:              94.7%  (target 95%)
+Out-of-fold precision:           33.4%
+Out-of-fold F1:                  0.493
+Out-of-fold pass rate:           26.5%
+Out-of-fold positives lost:      27 / 506
+
+========================================================================
+BEFORE vs AFTER  (full-data self-consistency check, same methodology)
+========================================================================
+                                BEFORE         AFTER
+Gate threshold                   0.000         0.141
+Target recall                     95%           95%
+Actual recall                  100.0%         94.9%
+Providers passed                 5,410         1,406
+Providers filtered                   0         4,004
+Pass rate                      100.0%         26.0%
+Positives lost                       0            26
+========================================================================

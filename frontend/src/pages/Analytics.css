@@ -1,0 +1,209 @@
+.analytics-page {
+  max-width: 1080px;
+}
+
+.analytics-header {
+  margin-bottom: 24px;
+}
+
+.analytics-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.analytics-header p {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* ---------- metric cards ---------- */
+
+.analytics-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* ---------- chart grid ---------- */
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.analytics-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.analytics-card--wide {
+  grid-column: 1 / -1;
+}
+
+.analytics-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.analytics-card-subtitle {
+  margin: 3px 0 12px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ---------- donut + legend ---------- */
+
+.analytics-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.analytics-donut-wrap > :first-child {
+  flex: 1.2;
+  min-width: 0;
+}
+
+.analytics-legend {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.analytics-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.analytics-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.analytics-legend-label {
+  color: #cbd5e1;
+  flex: 1;
+}
+
+.analytics-legend-value {
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------- custom rule-name tick (severity badge + label) ---------- */
+
+.analytics-rule-tick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  overflow: hidden;
+}
+
+.analytics-rule-tick-label {
+  font-size: 12px;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- chart loading / error ---------- */
+
+.analytics-chart-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.analytics-chart-skeleton-row {
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: analyticsSkeletonPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes analyticsSkeletonPulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytics-chart-skeleton-row {
+    animation: none;
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.analytics-chart-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-size: 12.5px;
+}
+
+.analytics-chart-retry {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 7px;
+  padding: 4px 10px;
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 900px) {
+  .analytics-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  .analytics-card--wide {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .analytics-metrics {
+    grid-template-columns: 1fr;
+  }
+}
