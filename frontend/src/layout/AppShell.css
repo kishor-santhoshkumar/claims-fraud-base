@@ -3,8 +3,8 @@
   display: flex;
   min-height: 100svh;
   overflow: hidden;
-  background: radial-gradient(circle at center, #0f1729 0%, #060a14 100%);
-  color: #e2e8f0;
+  background: var(--page-gradient);
+  color: var(--text-body);
 }
 
 .app-shell-content {

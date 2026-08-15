@@ -193,6 +193,31 @@ export async function getProviderShap(providerId) {
   return data
 }
 
+// Model/training metadata: GET /model/info -- static per deployed artifact,
+// used to ground the Dashboard's numbers in the real model behind them.
+// Returns the backend's response verbatim:
+// { architecture, feature_count, feature_cols, gate_threshold, gate_target_recall,
+//   actual_gate_recall, providers_passed, pass_rate, rf_gate_params, gate_eval_full,
+//   gate_eval_cv, trained_rows, positive_rate, notes }
+export async function getModelInfo() {
+  const url = `${API_BASE_URL}/model/info`
+  let response
+  try {
+    response = await fetch(url)
+  } catch {
+    const err = new Error('Could not reach the backend. Check your connection and try again.')
+    err.status = null
+    throw err
+  }
+  const data = await parseJsonSafe(response)
+  if (!response.ok) {
+    const err = new Error(data?.detail || `Request failed (HTTP ${response.status})`)
+    err.status = response.status
+    throw err
+  }
+  return data
+}
+
 // Batch aggregate: GET /analytics/rule-fire-rates?provider_ids=A,B,C
 // Returns the backend's response verbatim:
 // { total_providers, rules: [{ rule_id, name, severity, providers_fired, fire_rate }] }

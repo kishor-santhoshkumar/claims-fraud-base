@@ -1,13 +1,13 @@
 .decision-bar {
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--hairline);
 }
 
 .decision-loading {
   margin-top: 20px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .decision-error {
@@ -19,7 +19,7 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 10px;
-  color: #fca5a5;
+  color: #dc2626;
   font-size: 12.5px;
 }
 
@@ -32,7 +32,7 @@
   border: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: 7px;
   padding: 4px 10px;
-  color: #fca5a5;
+  color: #dc2626;
   font-size: 12px;
   font-weight: 600;
   font-family: inherit;
@@ -62,26 +62,26 @@
 }
 
 .decision-action-btn:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.05);
   transform: translateY(-1px);
 }
 
 .decision-action-btn--danger {
   background: rgba(239, 68, 68, 0.14);
   border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
+  color: #dc2626;
 }
 
 .decision-action-btn--success {
   background: rgba(16, 185, 129, 0.14);
   border: 1px solid rgba(16, 185, 129, 0.35);
-  color: #6ee7b7;
+  color: #059669;
 }
 
 .decision-action-btn--warning {
-  background: rgba(245, 158, 11, 0.14);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #b45309;
 }
 
 /* ---------- decided status ---------- */
@@ -104,27 +104,27 @@
 
 .decision-status-badge--danger {
   background: rgba(239, 68, 68, 0.16);
-  color: #fca5a5;
+  color: #dc2626;
 }
 .decision-status-badge--success {
   background: rgba(16, 185, 129, 0.16);
-  color: #6ee7b7;
+  color: #059669;
 }
 .decision-status-badge--warning {
-  background: rgba(245, 158, 11, 0.16);
-  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
 }
 
 .decision-status-text {
   font-size: 12.5px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .decision-change-link {
   margin-left: auto;
   background: transparent;
   border: none;
-  color: #93c5fd;
+  color: #2563eb;
   font-size: 12.5px;
   font-weight: 500;
   font-family: inherit;
@@ -134,7 +134,7 @@
 }
 
 .decision-change-link:hover {
-  color: #bfdbfe;
+  color: #1d4ed8;
 }
 
 /* ---------- confirmation dialog ---------- */
@@ -142,8 +142,8 @@
 .decision-dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(6, 10, 20, 0.6);
-  backdrop-filter: blur(2px);
+  background: rgba(30, 35, 60, 0.35);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,11 +154,13 @@
 .decision-dialog {
   width: 100%;
   max-width: 420px;
-  background: #0f1729;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-glass-lg);
 }
 
 .decision-dialog-header {
@@ -170,13 +172,13 @@
   margin-bottom: 10px;
 }
 
-.decision-dialog-header--danger { color: #fca5a5; }
-.decision-dialog-header--success { color: #6ee7b7; }
-.decision-dialog-header--warning { color: #fcd34d; }
+.decision-dialog-header--danger { color: #dc2626; }
+.decision-dialog-header--success { color: #059669; }
+.decision-dialog-header--warning { color: #b45309; }
 
 .decision-dialog-copy {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
   line-height: 1.5;
   margin-bottom: 16px;
 }
@@ -187,7 +189,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #64748b;
+  color: var(--text-muted);
   margin-bottom: 7px;
 }
 
@@ -195,16 +197,16 @@
   text-transform: none;
   font-weight: 400;
   letter-spacing: normal;
-  color: #475569;
+  color: var(--text-faint);
 }
 
 .decision-dialog-textarea {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--glass-border-soft);
   border-radius: 10px;
   padding: 10px 12px;
-  color: #e2e8f0;
+  color: var(--text-body);
   font-size: 13px;
   font-family: inherit;
   resize: vertical;
@@ -227,9 +229,9 @@
   height: 40px;
   padding: 0 18px;
   border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-soft);
   background: transparent;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
@@ -245,7 +247,7 @@
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  color: #0f1729;
+  color: #fff;
 }
 
 .decision-dialog-confirm:disabled {
@@ -253,9 +255,9 @@
   cursor: default;
 }
 
-.decision-dialog-confirm--danger { background: #f87171; }
-.decision-dialog-confirm--success { background: #34d399; }
-.decision-dialog-confirm--warning { background: #fbbf24; }
+.decision-dialog-confirm--danger { background: #ef4444; }
+.decision-dialog-confirm--success { background: #10b981; }
+.decision-dialog-confirm--warning { background: #f59e0b; }
 
 /* ---------- toast ---------- */
 
@@ -267,29 +269,31 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #0f1729;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 12px;
   padding: 12px 16px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-glass-lg);
   z-index: 60;
 }
 
 .decision-toast-icon {
-  color: #6ee7b7;
+  color: #059669;
   flex-shrink: 0;
 }
 
 .decision-toast-text {
   font-size: 13px;
-  color: #f1f5f9;
+  color: var(--text-body);
   white-space: nowrap;
 }
 
 .decision-toast-undo {
   background: transparent;
   border: none;
-  color: #93c5fd;
+  color: #2563eb;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;

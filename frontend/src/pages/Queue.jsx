@@ -4,7 +4,6 @@ import { CheckCircle2 } from 'lucide-react'
 import { useSimulation } from '../SimulationContext'
 import { useDecisions } from '../DecisionsContext'
 import ProviderRow from '../components/ProviderRow'
-import SkeletonRows from '../components/SkeletonRows'
 import SimulationGate from '../components/simulation/SimulationGate'
 import { DECISION_META, DECISION_TYPES } from '../utils/decisions'
 import './Queue.css'
@@ -33,11 +32,6 @@ export default function Queue() {
       <SimulationGate
         emptyTitle="No simulation has been run yet"
         emptyDescription="The queue is empty until a simulation is run — real results appear here the moment the backend responds."
-        loadingSlot={
-          <div className="queue-card">
-            <SkeletonRows count={8} />
-          </div>
-        }
       >
         <QueueReady results={results} />
       </SimulationGate>

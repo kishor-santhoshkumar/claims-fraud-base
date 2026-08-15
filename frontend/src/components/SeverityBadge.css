@@ -9,14 +9,14 @@
 }
 
 .severity-badge--high {
-  background: rgba(239, 68, 68, 0.16);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.14);
+  color: #dc2626;
 }
 .severity-badge--medium {
   background: rgba(245, 158, 11, 0.16);
-  color: #fcd34d;
+  color: #b45309;
 }
 .severity-badge--low {
-  background: rgba(148, 163, 184, 0.16);
-  color: #cbd5e1;
+  background: rgba(100, 116, 139, 0.14);
+  color: #475569;
 }

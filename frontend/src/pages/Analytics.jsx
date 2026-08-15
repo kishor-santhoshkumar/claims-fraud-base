@@ -15,8 +15,8 @@ import './Analytics.css'
 // severity badges, decision buttons, risk badges) -- not a new palette.
 const RISK_COLORS = { high: '#ef4444', medium: '#f59e0b', low: '#3b82f6' }
 const DECISION_COLORS = { confirmed: '#ef4444', cleared: '#10b981', escalated: '#f59e0b', unreviewed: '#64748b' }
-const CHART_TEXT = '#94a3b8'
-const CHART_GRID = 'rgba(255,255,255,0.08)'
+const CHART_TEXT = '#64748b'
+const CHART_GRID = 'rgba(15,23,42,0.08)'
 
 export default function Analytics() {
   const { results } = useSimulation()
@@ -152,7 +152,7 @@ function AnalyticsReady({ results }) {
             <BarChart data={decisionChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <XAxis dataKey="name" tick={{ fill: CHART_TEXT, fontSize: 11 }} axisLine={{ stroke: CHART_GRID }} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fill: CHART_TEXT, fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(15,23,42,0.04)' }} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {decisionChartData.map((entry) => (
                   <Cell key={entry.key} fill={DECISION_COLORS[entry.key]} />
@@ -202,7 +202,7 @@ function RuleFireRatesSection({ state }) {
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+              cursor={{ fill: 'rgba(15,23,42,0.04)' }}
               formatter={(value, _name, item) => [
                 `${item.payload.providers_fired} of ${state.data.total_providers} providers (${Math.round(value * 100)}%)`,
                 'Fired',
@@ -256,13 +256,13 @@ function ShapImportanceSection({ state }) {
               type="category"
               dataKey="display_name"
               width={190}
-              tick={{ fill: '#e2e8f0', fontSize: 12 }}
+              tick={{ fill: '#334155', fontSize: 12 }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+              cursor={{ fill: 'rgba(15,23,42,0.04)' }}
               formatter={(value) => [value.toFixed(3), 'Avg |SHAP|']}
             />
             <Bar dataKey="avg_abs_shap" fill="#6366f1" radius={[0, 6, 6, 0]} />
@@ -297,9 +297,10 @@ function ChartError({ message, onRetry }) {
 }
 
 const tooltipStyle = {
-  background: '#0f1729',
-  border: '1px solid rgba(255,255,255,0.14)',
+  background: 'rgba(255,255,255,0.95)',
+  border: '1px solid rgba(15,23,42,0.1)',
   borderRadius: 8,
   fontSize: 12.5,
-  color: '#e2e8f0',
+  color: '#1f2937',
+  boxShadow: '0 8px 24px rgba(76,81,219,0.15)',
 }

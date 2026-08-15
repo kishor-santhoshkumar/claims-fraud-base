@@ -5,7 +5,7 @@
   position: relative;
   min-height: 100svh;
   overflow: hidden;
-  background: radial-gradient(circle at center, #0f1729 0%, #060a14 100%);
+  background: var(--page-gradient);
 }
 
 /* Ambient blob/grid backdrop now lives in components/AmbientBackground.css
@@ -42,14 +42,15 @@
 .login-card {
   width: min(440px, 100%);
   padding: 48px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.85) 0%, rgba(219, 234, 254, 0.72) 55%, rgba(191, 219, 254, 0.62) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: 20px;
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 24px 60px rgba(59, 130, 246, 0.18),
+    0 2px 8px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   animation: cardEntrance 0.4s ease-out;
 }
 
@@ -75,21 +76,21 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
   margin-bottom: 18px;
 }
 
 .login-title {
   font-size: 26px;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.01em;
 }
 
 .login-subtitle {
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--text-muted);
   letter-spacing: 0.04em;
   margin-top: 6px;
 }
@@ -104,7 +105,7 @@
   display: block;
   font-size: 11px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 7px;
@@ -117,11 +118,11 @@
 .login-input {
   width: 100%;
   height: 48px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--glass-border-soft);
   border-radius: 10px;
   padding: 0 14px;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -132,7 +133,7 @@
 }
 
 .login-input::placeholder {
-  color: rgba(148, 163, 184, 0.45);
+  color: rgba(71, 81, 107, 0.45);
 }
 
 .login-input:focus {
@@ -152,7 +153,7 @@
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-faint);
   padding: 8px;
   display: flex;
   cursor: pointer;
@@ -161,7 +162,7 @@
 }
 
 .login-toggle-visibility:hover {
-  color: #cbd5e1;
+  color: var(--text-primary);
 }
 
 /* ---------- error ---------- */
@@ -172,7 +173,7 @@
   gap: 8px;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  color: #dc2626;
   border-radius: 999px;
   padding: 9px 16px;
   font-size: 13px;
@@ -206,7 +207,7 @@
 .login-submit:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.06);
-  box-shadow: 0 10px 28px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 10px 28px rgba(59, 130, 246, 0.4);
 }
 
 .login-submit:disabled {
@@ -227,14 +228,14 @@
 .login-inline-quote {
   margin-top: 28px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--hairline);
   text-align: center;
 }
 
 .login-quote-divider {
   width: 28px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(71, 81, 107, 0.25);
   margin: 0 auto 14px;
 }
 
@@ -247,8 +248,8 @@
   font-style: italic;
   font-size: 13px;
   line-height: 1.6;
-  color: #cbd5e1;
-  opacity: 0.7;
+  color: var(--text-secondary);
+  opacity: 0.85;
   animation: quoteFade 0.6s ease;
 }
 
@@ -257,8 +258,8 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #64748b;
-  opacity: 0.55;
+  color: var(--text-faint);
+  opacity: 0.75;
 }
 
 /* ---------- footer ---------- */
@@ -271,8 +272,8 @@
   z-index: 2;
   text-align: center;
   font-size: 11px;
-  color: #94a3b8;
-  opacity: 0.4;
+  color: var(--text-muted);
+  opacity: 0.65;
 }
 
 /* ---------- responsive ---------- */

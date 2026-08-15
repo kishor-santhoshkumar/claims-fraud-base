@@ -119,9 +119,9 @@ function CaseViewReady({
           <span className="case-view-metric-label">Flagged</span>
           <span className="case-view-flag">
             {result.flagged ? (
-              <CheckCircle2 size={15} color="#fca5a5" />
+              <CheckCircle2 size={15} color="#dc2626" />
             ) : (
-              <XCircle size={15} color="#6ee7b7" />
+              <XCircle size={15} color="#059669" />
             )}
             {result.flagged ? 'Yes' : 'No'}
           </span>
