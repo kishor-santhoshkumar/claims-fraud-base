@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { AlertTriangle, CheckCircle2, DollarSign, ListChecks, Percent, RotateCcw } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Hourglass, Percent, RotateCcw } from 'lucide-react'
 import { useSimulation } from '../SimulationContext'
 import { useDecisions } from '../DecisionsContext'
 import { useRuleFireRates } from '../hooks/useRuleFireRates'
@@ -8,7 +8,6 @@ import { useShapImportance } from '../hooks/useShapImportance'
 import StatCard from '../components/StatCard'
 import SeverityBadge from '../components/SeverityBadge'
 import SimulationGate from '../components/simulation/SimulationGate'
-import { formatCurrencyCompact } from '../utils/format'
 import './Analytics.css'
 
 // Same status-color tokens used everywhere else in the app (rule
@@ -43,11 +42,6 @@ function AnalyticsReady({ results }) {
   const shapImportance = useShapImportance(providerIds)
 
   // ---- metrics computed from data already held client-side (no fetch) ----
-  const flaggedResults = results.filter((r) => r.flagged)
-  const highRiskCount = results.filter((r) => r.fraud_probability >= 0.7).length
-  // Same formula as Dashboard.jsx's Run info card: Σ fraud_probability × billed, flagged only.
-  const dollarsAtRisk = flaggedResults.reduce((sum, r) => sum + (r.expectedLoss || 0), 0)
-
   const decisionCounts = { confirmed: 0, cleared: 0, escalated: 0 }
   for (const r of results) {
     const d = decisionsByProviderId[r.provider_id]
@@ -79,28 +73,19 @@ function AnalyticsReady({ results }) {
   return (
     <>
       <div className="analytics-metrics">
-        <StatCard label="Providers scored" value={results.length} icon={ListChecks} tone="blue" />
-        <StatCard
-          label="Flagged"
-          value={flaggedResults.length}
-          sublabel={`of ${results.length} scored`}
-          icon={AlertTriangle}
-          tone="amber"
-        />
-        <StatCard
-          label="High risk providers"
-          value={highRiskCount}
-          sublabel="fraud_probability ≥ 0.7"
-          icon={AlertTriangle}
-          tone="red"
-        />
-        <StatCard label="Dollars at risk" value={formatCurrencyCompact(dollarsAtRisk)} icon={DollarSign} tone="blue" />
         <StatCard
           label="Decisions made"
           value={decisionsMade}
           sublabel={`of ${results.length} scored`}
           icon={CheckCircle2}
           tone="blue"
+        />
+        <StatCard
+          label="Decisions pending"
+          value={unreviewedCount}
+          sublabel={`of ${results.length} scored`}
+          icon={Hourglass}
+          tone="amber"
         />
         <StatCard
           label="Confirmation rate"

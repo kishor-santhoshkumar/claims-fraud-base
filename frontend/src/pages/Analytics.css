@@ -191,9 +191,6 @@
 /* ---------- responsive ---------- */
 
 @media (max-width: 900px) {
-  .analytics-metrics {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .analytics-grid {
     grid-template-columns: 1fr;
   }
