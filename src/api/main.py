@@ -143,9 +143,10 @@ app.include_router(claims_router)
 # Rule engine evidence -- src/api/evidence.py / src/rules/. Also no ML.
 app.include_router(evidence_router)
 
-# Investigator decisions -- src/api/decisions.py. In-memory store, POST
-# requires auth (reuses get_current_user from src/api/auth.py). No coupling
-# to claims, evidence, or the ML pipeline.
+# Investigator decisions -- src/api/decisions.py. SQLite-backed store
+# (data/decisions.db), POST requires auth (reuses get_current_user from
+# src/api/auth.py). No coupling to claims, evidence, or the ML pipeline --
+# and /predict / /predict/batch above never read from or write to it.
 app.include_router(decisions_router)
 
 # SHAP feature attribution -- src/api/shap_explain.py. Explains the
