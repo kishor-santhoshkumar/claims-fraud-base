@@ -41,7 +41,8 @@ _DEMO_USERS = [
     {"username": "investigator1", "password": "demo1234", "name": "Alex Chen"},
     {"username": "investigator2", "password": "demo1234", "name": "Priya Nair"},
     {"username": "admin", "password": "admin1234", "name": "Admin User"},
-    {"username": "kishor", "password": "kishor@1234", "name": "Kishor S"}
+    {"username": "kishor", "password": "kishor@1234", "name": "Kishor S"},
+    {"username": "codecrafters", "password": "team10", "name": "Codecrafters"}
 ]
 
 
