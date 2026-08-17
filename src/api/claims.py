@@ -46,13 +46,17 @@ def load_claims_table() -> pd.DataFrame:
     op["DischargeDt"] = pd.NaT
 
     combined = pd.concat([ip, op], ignore_index=True, sort=False)
-    combined = combined.merge(data["bene"][["BeneID", "DOB", "DOD"]], on="BeneID", how="left")
+    combined = combined.merge(data["bene"][["BeneID", "DOB", "DOD", "State"]], on="BeneID", how="left")
     combined = combined.sort_values("ClaimStartDt", kind="stable").reset_index(drop=True)
     return combined
 
 
 def set_claims_table(df: pd.DataFrame) -> None:
     _state["claims_df"] = df
+
+
+def get_claims_df() -> pd.DataFrame | None:
+    return _state.get("claims_df")
 
 
 def _iso(value) -> str | None:

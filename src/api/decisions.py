@@ -164,14 +164,16 @@ def post_provider_decision(
 
 @router.get("/providers/{provider_id}/decision", response_model=DecisionRecord)
 def get_provider_decision(provider_id: str):
-    """404 here means 'no decision yet' -- a normal, expected state for a
-    freshly-scored provider, not an error. Callers should treat it as
-    'undecided', not surface it as a failure."""
+    """Returns the decision for a provider if recorded, or a record with decision=None
+    if unreviewed -- allowing the frontend to check decision status cleanly with HTTP 200."""
     record = get_decision(provider_id)
     if record is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No decision recorded yet for provider_id '{provider_id}'",
+        return DecisionRecord(
+            provider_id=provider_id,
+            decision=None,
+            decided_by=None,
+            decided_at=None,
+            notes=None,
         )
     return DecisionRecord(**record)
 

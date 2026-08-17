@@ -20,9 +20,9 @@ class DecisionRequest(BaseModel):
 
 class DecisionRecord(BaseModel):
     provider_id: str
-    decision: str
-    decided_by: str
-    decided_at: str
+    decision: Optional[str] = None
+    decided_by: Optional[str] = None
+    decided_at: Optional[str] = None
     notes: Optional[str] = None
 
 

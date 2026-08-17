@@ -76,17 +76,28 @@ def check_interval_overlap(df: pd.DataFrame, logic: dict) -> RuleComputation:
     scoped = _apply_filter(df, logic.get("filter"))
     scoped = scoped.dropna(subset=[start_col, end_col])
 
+    counts = scoped.groupby(group_by)[CLAIM_ID_COL].transform("size")
+    scoped = scoped[counts > 1]
+    if scoped.empty:
+        return RuleComputation(kind="claims", claim_matches=set())
+
     matches: set[str] = set()
+    scoped = scoped.sort_values(by=group_by + [start_col])
     for _, group in scoped.groupby(group_by):
-        if len(group) < 2:
-            continue
         rows = list(group[[CLAIM_ID_COL, start_col, end_col]].itertuples(index=False))
-        for a, b in combinations(rows, 2):
-            a_id, a_start, a_end = a[0], a[1], a[2]
-            b_id, b_start, b_end = b[0], b[1], b[2]
-            if a_start < b_end and b_start < a_end:
-                matches.add(a_id)
-                matches.add(b_id)
+        n = len(rows)
+        if n < 2:
+            continue
+        max_end = rows[0][2]
+        max_end_id = rows[0][0]
+        for i in range(1, n):
+            cid, start, end = rows[i]
+            if start < max_end:
+                matches.add(cid)
+                matches.add(max_end_id)
+            if end > max_end:
+                max_end = end
+                max_end_id = cid
     return RuleComputation(kind="claims", claim_matches=matches)
 
 

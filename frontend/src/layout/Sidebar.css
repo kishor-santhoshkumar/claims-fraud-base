@@ -12,7 +12,7 @@
   background: var(--glass-bg-soft);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-right: 1px solid rgba(255, 255, 255, 0.7);
+  border-right: 1px solid var(--glass-border);
   box-shadow: 4px 0 24px rgba(76, 81, 219, 0.06);
   padding: 18px 14px;
   transition: width 0.2s ease;

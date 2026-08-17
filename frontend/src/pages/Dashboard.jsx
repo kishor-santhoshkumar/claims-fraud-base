@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowRight, BarChart3, Clock, DollarSign, ListChecks, RotateCcw } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  FileSearch,
+  ListChecks,
+  RotateCcw,
+  ShieldAlert,
+} from 'lucide-react'
 import { useAuth } from '../AuthContext'
 import { useSimulation } from '../SimulationContext'
 import { useDecisions } from '../DecisionsContext'
@@ -8,20 +19,16 @@ import { getModelInfo } from '../api'
 import StatCard from '../components/StatCard'
 import ProviderRow from '../components/ProviderRow'
 import SimulationGate from '../components/simulation/SimulationGate'
-import { formatCurrencyCompact, formatRelativeTime, getGreeting, getTodayLong } from '../utils/format'
+import { formatCurrencyCompact, formatFraudProbability, formatRelativeTime, getGreeting, getTodayLong } from '../utils/format'
 import { DECISION_META, DECISION_TYPES } from '../utils/decisions'
+import { RISK_TIER_LABEL, getTopRiskSignal } from '../utils/risk'
 import './Dashboard.css'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { status, results, lastRunAt, startSimulation } = useSimulation()
+  const firstName = user?.name?.split(' ')[0] || 'Investigator'
 
-  const firstName = user?.name?.split(' ')[0] || 'there'
-
-  // Real model/training metadata (GET /model/info) -- independent of
-  // whether a simulation has been run, so it can ground the page even
-  // before "Start simulation" is clicked. Non-critical: any failure just
-  // hides the footer rather than showing an error (see ModelInfoFooter).
   const [modelInfo, setModelInfo] = useState(null)
   useEffect(() => {
     let cancelled = false
@@ -41,6 +48,10 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <header className="dashboard-header-row">
         <div>
+          <div className="dashboard-console-badge">
+            <span className="dashboard-pulse-dot" />
+            Fraud Investigation Console
+          </div>
           <h1 className="dashboard-greeting">
             {getGreeting()}, {firstName}
           </h1>
@@ -65,7 +76,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <SimulationGate emptyDescription="Run the two-stage cascade against real provider feature data to populate this dashboard. Until then, no stats or lists below are shown.">
+      <SimulationGate emptyDescription="Run the two-stage cascade against provider feature data to populate this investigation console. Until then, no statistics or case lists below are shown.">
         <DashboardReady results={results} lastRunAt={lastRunAt} />
       </SimulationGate>
 
@@ -76,20 +87,23 @@ export default function Dashboard() {
 
 function DashboardReady({ results, lastRunAt }) {
   const { byProviderId: decisionsByProviderId } = useDecisions()
-  const flaggedResults = results.filter((r) => r.flagged)
-  const highRiskCount = results.filter((r) => r.riskTier === 'high').length
-  const dollarsAtRisk = flaggedResults.reduce(
-    (sum, r) => sum + (r.expectedLoss || 0),
-    0
-  )
-  const topProviders = [...results]
-    .sort((a, b) => b.fraud_probability - a.fraud_probability)
-    .slice(0, 5)
+  const navigate = useNavigate()
 
-  // Shared aggregate for the new review-progress bar and escalated callout
-  // below -- computed independently from (and identically to) the Run
-  // info card's own decision counts, so that existing card's logic is
-  // left completely untouched while these two new features stay correct.
+  const flaggedResults = useMemo(() => results.filter((r) => r.flagged), [results])
+  const highRiskResults = useMemo(() => results.filter((r) => r.riskTier === 'high'), [results])
+  const mediumRiskResults = useMemo(() => results.filter((r) => r.riskTier === 'medium'), [results])
+  const lowRiskResults = useMemo(() => results.filter((r) => r.riskTier === 'low'), [results])
+
+  const dollarsAtRisk = useMemo(
+    () => flaggedResults.reduce((sum, r) => sum + (r.expectedLoss || 0), 0),
+    [flaggedResults]
+  )
+
+  const topProviders = useMemo(
+    () => [...results].sort((a, b) => b.fraud_probability - a.fraud_probability).slice(0, 6),
+    [results]
+  )
+
   const decisionStats = useMemo(() => {
     const counts = { confirmed: 0, cleared: 0, escalated: 0 }
     for (const r of results) {
@@ -100,77 +114,257 @@ function DashboardReady({ results, lastRunAt }) {
     return { ...counts, decided, total: results.length }
   }, [results, decisionsByProviderId])
 
+  // Highest priority cases for investigation (Escalated first, then High Risk unreviewed ordered by exposure)
+  const priorityCases = useMemo(() => {
+    const escalated = []
+    const highRiskUnreviewed = []
+
+    for (const r of results) {
+      const d = decisionsByProviderId[r.provider_id]
+      if (d && d.decision === 'escalated') {
+        escalated.push({ ...r, priorityType: 'escalated', priorityLabel: 'Escalated Case' })
+      } else if (!d && r.riskTier === 'high') {
+        highRiskUnreviewed.push({ ...r, priorityType: 'high_risk', priorityLabel: 'High Risk Unreviewed' })
+      }
+    }
+
+    escalated.sort((a, b) => b.fraud_probability - a.fraud_probability)
+    highRiskUnreviewed.sort((a, b) => (b.expectedLoss || 0) - (a.expectedLoss || 0))
+
+    return [...escalated, ...highRiskUnreviewed].slice(0, 4)
+  }, [results, decisionsByProviderId])
+
+  const totalScored = results.length
+  const flaggedPct = totalScored ? ((flaggedResults.length / totalScored) * 100).toFixed(1) : '0'
+  const highRiskPct = totalScored ? ((highRiskResults.length / totalScored) * 100).toFixed(1) : '0'
+
   return (
     <>
+      {/* Latest Scoring Run Status Bar */}
+      <div className="dashboard-status-bar">
+        <div className="dashboard-status-item">
+          <span className="dashboard-status-indicator" />
+          <span className="dashboard-status-label">Scoring Status:</span>
+          <span className="dashboard-status-value">Active ({totalScored} providers scored)</span>
+        </div>
+        <div className="dashboard-status-divider" />
+        <div className="dashboard-status-item">
+          <Clock size={13} />
+          <span className="dashboard-status-label">Last Scoring Run:</span>
+          <span className="dashboard-status-value">
+            {lastRunAt ? formatRelativeTime(lastRunAt) : 'Just now'}
+          </span>
+        </div>
+        <div className="dashboard-status-divider" />
+        <div className="dashboard-status-item">
+          <span className="dashboard-status-label">Cascade Architecture:</span>
+          <span className="dashboard-status-value">Stage 1 (RF Gate) → Stage 2 (XGBoost)</span>
+        </div>
+      </div>
+
       {decisionStats.escalated > 0 && (
         <div className="dashboard-escalated-callout">
-          <AlertTriangle size={17} />
+          <AlertTriangle size={16} />
           <span>
-            <strong>{decisionStats.escalated}</strong> case{decisionStats.escalated === 1 ? '' : 's'} escalated for
-            review
+            <strong>{decisionStats.escalated}</strong> case{decisionStats.escalated === 1 ? '' : 's'} escalated for senior investigator review
           </span>
           <Link to="/queue" className="dashboard-escalated-link">
-            View queue
+            View in queue
             <ArrowRight size={13} />
           </Link>
         </div>
       )}
 
+      {/* 4 KPI Stat Cards */}
       <div className="dashboard-stats">
-        <StatCard label="Providers scored" value={results.length} icon={ListChecks} tone="blue" />
         <StatCard
-          label="Flagged"
+          label="Providers scored"
+          value={totalScored}
+          sublabel={lastRunAt ? `Last run ${formatRelativeTime(lastRunAt)}` : '2-Stage ML Cascade'}
+          icon={ListChecks}
+          tone="blue"
+        />
+        <StatCard
+          label="Flagged providers"
           value={flaggedResults.length}
-          sublabel={`of ${results.length} scored`}
-          icon={AlertTriangle}
+          sublabel={`${flaggedPct}% of total scored`}
+          icon={ShieldAlert}
           tone="amber"
         />
         <StatCard
           label="High risk providers"
-          value={highRiskCount}
-          sublabel="fraud_probability ≥ 0.7"
+          value={highRiskResults.length}
+          sublabel={`${highRiskPct}% of total (prob ≥ 0.70)`}
           icon={AlertTriangle}
           tone="red"
         />
         <StatCard
-          label="Dollars at risk"
+          label="Expected exposure"
           value={formatCurrencyCompact(dollarsAtRisk)}
-          sublabel="Σ (fraud_probability × billed), flagged only"
+          sublabel={`Σ (fraud_prob × billed) flagged`}
           icon={DollarSign}
           tone="blue"
         />
       </div>
 
-      <div className="dashboard-below-stats">
-        <div className="dashboard-progress">
-          <div className="dashboard-progress-label">
-            <span>Review progress</span>
-            <span>
-              {decisionStats.decided} of {decisionStats.total} reviewed
-            </span>
+      {/* Review Progress & Risk Distribution Grid */}
+      <div className="dashboard-middle-grid">
+        {/* Risk Distribution Breakdown */}
+        <section className="dashboard-card dashboard-risk-dist-card">
+          <div className="dashboard-card-header">
+            <h2 className="dashboard-card-title">Risk Distribution</h2>
+            <span className="dashboard-card-tag">{totalScored} Total Scored</span>
           </div>
-          <div className="dashboard-progress-track">
-            <div
-              className="dashboard-progress-fill"
-              style={{ width: `${decisionStats.total ? (decisionStats.decided / decisionStats.total) * 100 : 0}%` }}
+          <div className="dashboard-risk-dist-bars">
+            <RiskBar
+              tierLabel="High Risk (≥ 70%)"
+              count={highRiskResults.length}
+              total={totalScored}
+              tone="red"
+            />
+            <RiskBar
+              tierLabel="Medium Risk (30% - 69%)"
+              count={mediumRiskResults.length}
+              total={totalScored}
+              tone="amber"
+            />
+            <RiskBar
+              tierLabel="Low Risk (< 30%)"
+              count={lowRiskResults.length}
+              total={totalScored}
+              tone="green"
             />
           </div>
-        </div>
-        <Link to="/analytics" className="dashboard-analytics-link">
-          <BarChart3 size={13} />
-          View analytics
-          <ArrowRight size={13} />
-        </Link>
+        </section>
+
+        {/* Review Progress */}
+        <section className="dashboard-card dashboard-review-card">
+          <div className="dashboard-card-header">
+            <h2 className="dashboard-card-title">Review Progress</h2>
+            <Link to="/analytics" className="dashboard-analytics-link">
+              <BarChart3 size={13} />
+              Analytics
+            </Link>
+          </div>
+          <div className="dashboard-progress-body">
+            <div className="dashboard-progress-label">
+              <span>Investigator Coverage</span>
+              <span>
+                {decisionStats.decided} of {decisionStats.total} reviewed (
+                {totalScored ? Math.round((decisionStats.decided / totalScored) * 100) : 0}%)
+              </span>
+            </div>
+            <div className="dashboard-progress-track">
+              <div
+                className="dashboard-progress-fill"
+                style={{
+                  width: `${totalScored ? (decisionStats.decided / totalScored) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <div className="dashboard-review-subtext">
+              <span>{totalScored - decisionStats.decided} cases awaiting decision</span>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div className="dashboard-columns">
-        <section className="dashboard-card">
-          <h2 className="dashboard-card-title">Top risk providers</h2>
-          <div className="dashboard-provider-list">
-            {topProviders.map((result, i) => (
-              <ProviderRow key={result.provider_id} rank={i + 1} result={result} />
+      {/* Investigation Priority Section */}
+      {priorityCases.length > 0 && (
+        <section className="dashboard-card dashboard-priority-section">
+          <div className="dashboard-card-header">
+            <div className="dashboard-card-title-group">
+              <ShieldAlert size={17} className="dashboard-priority-icon" />
+              <div>
+                <h2 className="dashboard-card-title">Investigation Priority</h2>
+                <p className="dashboard-card-subtitle">Highest-priority cases requiring immediate review</p>
+              </div>
+            </div>
+            <Link to="/queue" className="dashboard-card-link">
+              View all in queue
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+
+          <div className="dashboard-priority-grid">
+            {priorityCases.map((item) => (
+              <div
+                key={item.provider_id}
+                className="dashboard-priority-item"
+                onClick={() => navigate(`/case/${item.provider_id}`)}
+              >
+                <div className="dashboard-priority-top">
+                  <span
+                    className={`dashboard-priority-tag dashboard-priority-tag--${
+                      item.priorityType === 'escalated' ? 'escalated' : 'high'
+                    }`}
+                  >
+                    {item.priorityLabel}
+                  </span>
+                  <span className="dashboard-priority-id">{item.provider_id}</span>
+                </div>
+
+                <div className="dashboard-priority-metrics">
+                  <div className="dashboard-priority-metric">
+                    <span className="dashboard-priority-metric-label">Fraud Probability</span>
+                    <span className="dashboard-priority-metric-val dashboard-priority-metric-val--red">
+                      {formatFraudProbability(item.fraud_probability)}
+                    </span>
+                  </div>
+                  <div className="dashboard-priority-metric">
+                    <span className="dashboard-priority-metric-label">Expected Exposure</span>
+                    <span className="dashboard-priority-metric-val">
+                      {item.expectedLoss != null ? formatCurrencyCompact(item.expectedLoss) : '—'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="dashboard-priority-footer">
+                  <span className="dashboard-priority-signal">
+                    Signal: {getTopRiskSignal(item.provider_id, item)}
+                  </span>
+                  <button type="button" className="dashboard-priority-btn">
+                    Investigate
+                    <ArrowRight size={12} />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Main Grid: Top Risk Providers Table & Side Column */}
+      <div className="dashboard-columns">
+        <section className="dashboard-card">
+          <div className="dashboard-card-header">
+            <h2 className="dashboard-card-title">Top Risk Providers</h2>
+            <span className="dashboard-card-tag">Ranked by Fraud Probability</span>
+          </div>
+
+          {/* Table Column Headers */}
+          <div className="dashboard-table-header">
+            <span className="tbl-col-rank">#</span>
+            <span className="tbl-col-id">Provider ID</span>
+            <span className="tbl-col-decision">Status</span>
+            <span className="tbl-col-tier">Risk Tier</span>
+            <span className="tbl-col-signal">Top Signal</span>
+            <span className="tbl-col-score">Score</span>
+            <span className="tbl-col-loss">Exposure</span>
+          </div>
+
+          <div className="dashboard-provider-list">
+            {topProviders.map((result, i) => (
+              <ProviderRow
+                key={result.provider_id}
+                rank={i + 1}
+                result={result}
+                decision={decisionsByProviderId[result.provider_id]}
+                showSignal={true}
+              />
+            ))}
+          </div>
+
           <Link to="/queue" className="dashboard-card-link">
             View full queue
             <ArrowRight size={14} />
@@ -182,15 +376,15 @@ function DashboardReady({ results, lastRunAt }) {
             <h2 className="dashboard-card-title">Run info</h2>
             <dl className="dashboard-run-info">
               <div className="dashboard-run-info-row">
-                <dt>Last run</dt>
+                <dt>Last run time</dt>
                 <dd>{lastRunAt ? new Date(lastRunAt).toLocaleTimeString() : '—'}</dd>
               </div>
               <div className="dashboard-run-info-row">
-                <dt>Providers scored</dt>
+                <dt>Total providers scored</dt>
                 <dd>{results.length}</dd>
               </div>
               <div className="dashboard-run-info-row">
-                <dt>Flagged</dt>
+                <dt>Flagged count</dt>
                 <dd>{flaggedResults.length}</dd>
               </div>
             </dl>
@@ -202,6 +396,28 @@ function DashboardReady({ results, lastRunAt }) {
         </div>
       </div>
     </>
+  )
+}
+
+function RiskBar({ tierLabel, count, total, tone }) {
+  const pct = total ? Math.round((count / total) * 100) : 0
+  return (
+    <div className="dashboard-risk-bar-item">
+      <div className="dashboard-risk-bar-top">
+        <span className={`dashboard-risk-bar-label dashboard-risk-bar-label--${tone}`}>
+          {tierLabel}
+        </span>
+        <span className="dashboard-risk-bar-val">
+          <strong>{count}</strong> ({pct}%)
+        </span>
+      </div>
+      <div className="dashboard-risk-bar-track">
+        <div
+          className={`dashboard-risk-bar-fill dashboard-risk-bar-fill--${tone}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -234,11 +450,6 @@ function DecisionCounts({ results, decisionsByProviderId }) {
   )
 }
 
-// Most recent investigator decisions, real data from the same GET /decisions
-// response DecisionsContext already fetches after every simulation run (see
-// layout/AppShell.jsx) -- reading it here avoids a second, redundant fetch
-// of the same endpoint and keeps this feed in lockstep with the Run info
-// card's counts and the Queue page's badges (all read from the same map).
 function RecentActivity({ decisionsByProviderId }) {
   const allDecisions = useMemo(
     () =>
@@ -295,15 +506,12 @@ function RecentActivity({ decisionsByProviderId }) {
   )
 }
 
-// Grounds the numbers above in the real deployed model artifact (GET
-// /model/info). Non-critical supplementary info -- renders nothing at all
-// if the fetch hasn't resolved yet or failed, rather than an error state.
 function ModelInfoFooter({ modelInfo }) {
   if (!modelInfo) return null
   return (
     <p className="dashboard-model-footer">
-      Model: {modelInfo.architecture} · {modelInfo.feature_count} features · gate target recall{' '}
-      {Math.round(modelInfo.gate_target_recall * 100)}% · last trained on{' '}
+      Model Architecture: {modelInfo.architecture} · {modelInfo.feature_count} features · Gate target recall:{' '}
+      {Math.round(modelInfo.gate_target_recall * 100)}% · Trained on{' '}
       {modelInfo.trained_rows.toLocaleString()} providers
     </p>
   )

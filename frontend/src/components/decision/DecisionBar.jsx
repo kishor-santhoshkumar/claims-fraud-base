@@ -4,6 +4,7 @@ import { CheckCircle2, RotateCcw } from 'lucide-react'
 import { useProviderDecision } from '../../hooks/useProviderDecision'
 import { useSimulation } from '../../SimulationContext'
 import { useDecisions } from '../../DecisionsContext'
+import { useNotifications } from '../../NotificationsContext'
 import { DECISION_META, DECISION_TYPES, findNextUnreviewedProviderId, formatDecidedAt } from '../../utils/decisions'
 import './DecisionBar.css'
 
@@ -13,6 +14,7 @@ export default function DecisionBar({ providerId }) {
   const { status, decision, error, submit, undoLocal, retry } = useProviderDecision(providerId)
   const { results } = useSimulation()
   const { byProviderId: decisionsByProviderId } = useDecisions()
+  const { addNotification } = useNotifications()
   const navigate = useNavigate()
 
   const [showButtons, setShowButtons] = useState(false)
@@ -38,9 +40,63 @@ export default function DecisionBar({ providerId }) {
     )
   }
 
+  async function executeSubmit(actionValue, noteText) {
+    setSubmitting(true)
+    try {
+      await submit(actionValue, noteText.trim())
+      setPendingAction(null)
+      setShowButtons(false)
+      setToastAction(actionValue)
+
+      // Trigger notifications based on action type
+      if (actionValue === 'escalated') {
+        addNotification({
+          type: 'case_escalated',
+          title: 'Case escalated',
+          message: `Provider ${providerId} escalated for senior investigator review`,
+          providerId,
+          targetPath: `/case/${providerId}`,
+        })
+      } else {
+        addNotification({
+          type: 'decision_saved',
+          title: 'Investigator decision saved',
+          message: `Provider ${providerId} marked as ${DECISION_META[actionValue]?.badgeLabel || actionValue}`,
+          providerId,
+          targetPath: `/case/${providerId}`,
+        })
+      }
+
+      toastTimerRef.current = setTimeout(() => {
+        setToastAction(null)
+        goToNext()
+      }, TOAST_DURATION_MS)
+    } catch (err) {
+      window.alert(err.message || 'Could not save this decision. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   function openConfirm(actionValue) {
-    setPendingAction(actionValue)
-    setNotes('')
+    let requireConfirm = true
+    try {
+      const stored = localStorage.getItem('appSettings')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        const pref = parsed.investigation?.confirmationBeforeDecision ?? parsed.investigationPreferences?.confirmationBeforeDecision
+        if (pref === false) requireConfirm = false
+      }
+    } catch {
+      // Fallback
+    }
+
+    if (!requireConfirm) {
+      executeSubmit(actionValue, '')
+    } else {
+      setPendingAction(actionValue)
+      setNotes('')
+    }
   }
 
   function cancelConfirm() {
@@ -49,22 +105,7 @@ export default function DecisionBar({ providerId }) {
   }
 
   async function confirmSubmit() {
-    setSubmitting(true)
-    try {
-      await submit(pendingAction, notes.trim())
-      setPendingAction(null)
-      setShowButtons(false)
-      setToastAction(pendingAction)
-      toastTimerRef.current = setTimeout(() => {
-        setToastAction(null)
-        goToNext()
-      }, TOAST_DURATION_MS)
-    } catch (err) {
-      // pendingAction is untouched here, so the dialog stays open for a retry.
-      window.alert(err.message || 'Could not save this decision. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+    await executeSubmit(pendingAction, notes)
   }
 
   function undoToast() {
@@ -75,11 +116,22 @@ export default function DecisionBar({ providerId }) {
   }
 
   function goToNext() {
+    let autoOpen = false
+    try {
+      const stored = localStorage.getItem('appSettings')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        autoOpen = !!(parsed.investigation?.autoOpenNextCase ?? parsed.investigationPreferences?.autoOpenNextCase)
+      }
+    } catch {
+      // Fallback
+    }
+
     const nextId = findNextUnreviewedProviderId(results, decisionsByProviderId, providerId)
-    if (nextId) {
+    if (autoOpen && nextId) {
       navigate(`/case/${nextId}`)
     } else {
-      navigate('/queue', { state: { message: 'All providers reviewed.' } })
+      navigate('/queue', { state: { message: 'Decision recorded successfully.' } })
     }
   }
 

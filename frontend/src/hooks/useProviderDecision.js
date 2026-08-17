@@ -9,15 +9,25 @@ import { getProviderDecision, postProviderDecision } from '../api'
 // decision is made or undone here.
 export function useProviderDecision(providerId) {
   const { token } = useAuth()
-  const { recordLocal, clearLocal } = useDecisions()
+  const { byProviderId, recordLocal, clearLocal } = useDecisions()
   const [state, setState] = useState({ status: 'loading', decision: null, error: null })
 
   const fetchDecision = useCallback(() => {
     let cancelled = false
     setState({ status: 'loading', decision: null, error: null })
+
+    if (byProviderId && byProviderId[providerId]) {
+      setState({ status: 'ready', decision: byProviderId[providerId], error: null })
+      return () => {
+        cancelled = true
+      }
+    }
+
     getProviderDecision(providerId)
       .then((data) => {
-        if (!cancelled) setState({ status: 'ready', decision: data, error: null })
+        if (cancelled) return
+        const record = data && data.decision ? data : null
+        setState({ status: 'ready', decision: record, error: null })
       })
       .catch((err) => {
         if (cancelled) return
@@ -30,8 +40,7 @@ export function useProviderDecision(providerId) {
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [providerId])
+  }, [providerId, byProviderId])
 
   useEffect(() => fetchDecision(), [fetchDecision])
 

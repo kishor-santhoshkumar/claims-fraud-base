@@ -31,10 +31,14 @@ class RuleEngine:
         self.enabled_rules: list[Rule] = []
         self.disabled_rules: list[tuple[Rule, str]] = []
         self._computations: dict[str, object] = {}
-        self._provider_claim_ids: dict[str, set[str]] = {
-            provider_id: set(group[CLAIM_ID_COL])
-            for provider_id, group in claims_df.groupby(PROVIDER_COL)
-        }
+        pids = claims_df[PROVIDER_COL].values
+        cids = claims_df[CLAIM_ID_COL].values
+        provider_claim_ids: dict[str, set[str]] = {}
+        for p, c in zip(pids, cids):
+            if p not in provider_claim_ids:
+                provider_claim_ids[p] = set()
+            provider_claim_ids[p].add(c)
+        self._provider_claim_ids = provider_claim_ids
         self._evidence_cache: dict[str, dict] = {}
         self._build(rules)
 

@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import { predictBatch } from './api'
 import providersRaw from './data/providers_raw.json'
 import { getRiskTier } from './utils/risk'
+import { formatFraudProbability } from './utils/format'
+import { useNotifications } from './NotificationsContext'
 
 const SimulationContext = createContext(null)
 
@@ -39,6 +41,7 @@ function augmentResult(result) {
 export function SimulationProvider({ children }) {
   const [state, setState] = useState(INITIAL_STATE)
   const runningRef = useRef(false)
+  const { addNotification } = useNotifications()
 
   const startSimulation = useCallback(async () => {
     if (runningRef.current) return
@@ -46,12 +49,35 @@ export function SimulationProvider({ children }) {
     setState((s) => ({ ...s, status: 'loading', error: null }))
     try {
       const rawResults = await predictBatch(providersRaw)
+      const augmented = rawResults.map(augmentResult)
+      
       setState({
         status: 'ready',
-        results: rawResults.map(augmentResult),
+        results: augmented,
         lastRunAt: Date.now(),
         error: null,
       })
+
+      // Trigger scoring completion notification
+      const highRiskList = augmented.filter((r) => r.riskTier === 'high')
+      addNotification({
+        type: 'scoring_complete',
+        title: 'Scoring run completed',
+        message: `Successfully scored ${augmented.length} healthcare providers (${highRiskList.length} high risk detected)`,
+        targetPath: '/simulation',
+      })
+
+      // Trigger high risk provider alert for the top flagged provider if any
+      if (highRiskList.length > 0) {
+        const topHighRisk = [...highRiskList].sort((a, b) => b.fraud_probability - a.fraud_probability)[0]
+        addNotification({
+          type: 'high_risk',
+          title: 'High-risk provider detected',
+          message: `Provider ${topHighRisk.provider_id} flagged with High Risk (${formatFraudProbability(topHighRisk.fraud_probability)} score)`,
+          providerId: topHighRisk.provider_id,
+          targetPath: `/case/${topHighRisk.provider_id}`,
+        })
+      }
     } catch (err) {
       setState((s) => ({
         ...s,
@@ -61,7 +87,8 @@ export function SimulationProvider({ children }) {
     } finally {
       runningRef.current = false
     }
-  }, [])
+  }, [addNotification])
+
 
   const resultByProviderId = useMemo(() => {
     const map = new Map()

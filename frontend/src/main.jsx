@@ -6,17 +6,22 @@ import App from './App.jsx'
 import { AuthProvider } from './AuthContext.jsx'
 import { SimulationProvider } from './SimulationContext.jsx'
 import { DecisionsProvider } from './DecisionsContext.jsx'
+import { NotificationProvider } from './NotificationsContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <SimulationProvider>
-          <DecisionsProvider>
-            <App />
-          </DecisionsProvider>
-        </SimulationProvider>
+        <NotificationProvider>
+          <SimulationProvider>
+            <DecisionsProvider>
+              <App />
+            </DecisionsProvider>
+          </SimulationProvider>
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )
+
+

@@ -33,13 +33,13 @@ class ProviderFeatures(BaseModel):
     max_reimbursed: float = Field(..., description="Max reimbursed amount on a single claim")
     std_reimbursed: float = Field(..., description="Std dev of reimbursed amounts")
     total_deductible: float = Field(..., description="Sum of deductible amounts")
-    mean_deductible: float = Field(..., description="Mean deductible amount per claim")
+    mean_deductible: Optional[float] = Field(None, description="Mean deductible amount per claim")
 
     # --- Duration ---
     mean_claim_duration: float = Field(..., description="Mean claim duration in days")
     max_claim_duration: float = Field(..., description="Max claim duration in days")
-    mean_admission_length: float = Field(..., description="Mean inpatient admission length")
-    max_admission_length: float = Field(..., description="Max inpatient admission length")
+    mean_admission_length: Optional[float] = Field(None, description="Mean inpatient admission length (null for outpatient-only providers)")
+    max_admission_length: Optional[float] = Field(None, description="Max inpatient admission length (null for outpatient-only providers)")
 
     # --- Coding ---
     mean_n_diag: float = Field(..., description="Mean number of diagnosis codes per claim")

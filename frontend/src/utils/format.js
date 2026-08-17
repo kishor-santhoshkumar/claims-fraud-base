@@ -92,3 +92,17 @@ export function getInitials(name) {
   const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
   return (first + last).toUpperCase()
 }
+
+// Formats continuous fraud probability (0 to 1) as a clean percentage string.
+// Displays with 2 decimal places to preserve model precision and differences between providers
+// (e.g. 0.9982 -> "99.82%", 0.9734 -> "97.34%", 0.8217 -> "82.17%", 0.6412 -> "64.12%").
+// Avoids rounding non-1.0 probabilities up to 100.00%.
+export function formatFraudProbability(probability, decimals = 2) {
+  if (probability == null || Number.isNaN(probability)) return '—'
+  const pct = probability * 100
+  if (probability < 1.0 && pct >= 100 - Math.pow(10, -decimals) / 2) {
+    const maxPct = 100 - Math.pow(10, -decimals)
+    return `${maxPct.toFixed(decimals)}%`
+  }
+  return `${pct.toFixed(decimals)}%`
+}

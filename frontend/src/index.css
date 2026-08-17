@@ -2,39 +2,92 @@
   font: 15px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
   color-scheme: light;
 
-  /* ---------- shared light-glassmorphic design tokens ---------- */
+  /* ---------- enterprise professional design tokens (Light Theme) ---------- */
 
+  /* Primary brand color: Blue */
+  --accent-blue: #2563eb;
+  --accent-blue-light: #3b82f6;
+  --accent-blue-dark: #1e40af;
+
+  /* Semantic colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Text colors: dark on light background */
+  --text-primary: #111827;
+  --text-body: #1f2937;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-faint: #9ca3af;
+
+  /* Card/surface backgrounds */
+  --glass-bg: #ffffff;
+  --glass-bg-strong: #ffffff;
+  --glass-bg-soft: #f9fafb;
+  --glass-border: #e5e7eb;
+  --glass-border-soft: #f3f4f6;
+  
+  /* Subtle shadows for depth */
+  --hairline: #e5e7eb;
+  --shadow-glass: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-glass-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  /* Page background */
+  --page-gradient: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+}
+
+/* ---------- Dark Theme Tokens ---------- */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Primary brand color: Blue */
   --accent-blue: #3b82f6;
-  --accent-violet: #6366f1;
-  --accent-pink: #ec4899;
-  --accent-teal: #14b8a6;
+  --accent-blue-light: #60a5fa;
+  --accent-blue-dark: #1d4ed8;
 
-  /* text, dark-on-light */
-  --text-primary: #161b2e;
-  --text-body: #232a41;
-  --text-secondary: #47516b;
-  --text-muted: #667088;
-  --text-faint: #8791a8;
+  /* Semantic colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
 
-  /* glass surfaces -- tinted toward the page gradient (violet/blue/pink)
-     rather than flat white, so cards read as panes of the same glass
-     instead of opaque boxes sitting on top of it */
-  --glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.72) 0%, rgba(228, 231, 253, 0.5) 55%, rgba(252, 235, 246, 0.46) 100%);
-  --glass-bg-strong: linear-gradient(160deg, rgba(255, 255, 255, 0.88) 0%, rgba(232, 234, 253, 0.72) 100%);
-  --glass-bg-soft: linear-gradient(160deg, rgba(255, 255, 255, 0.52) 0%, rgba(230, 233, 253, 0.36) 100%);
-  --glass-border: rgba(255, 255, 255, 0.75);
-  --glass-border-soft: rgba(100, 116, 139, 0.22);
-  --hairline: rgba(30, 41, 59, 0.08);
-  --shadow-glass: 0 10px 30px rgba(76, 81, 219, 0.12), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-glass-lg: 0 24px 60px rgba(76, 81, 219, 0.18), 0 2px 8px rgba(15, 23, 42, 0.05);
+  /* Text colors: light on dark background */
+  --text-primary: #f8fafc;
+  --text-body: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
 
-  /* full-page mesh gradient, shared by the login screen and the app shell */
-  --page-gradient:
-    radial-gradient(circle at 10% 6%, rgba(99, 102, 241, 0.22) 0%, transparent 42%),
-    radial-gradient(circle at 90% 10%, rgba(56, 189, 248, 0.20) 0%, transparent 45%),
-    radial-gradient(circle at 85% 90%, rgba(236, 72, 153, 0.16) 0%, transparent 48%),
-    radial-gradient(circle at 8% 92%, rgba(16, 185, 129, 0.16) 0%, transparent 45%),
-    linear-gradient(160deg, #f5f7ff 0%, #eef1fd 45%, #fdf2f8 100%);
+  /* Card/surface backgrounds: rich dark slate */
+  --glass-bg: #0f172a;
+  --glass-bg-strong: #1e293b;
+  --glass-bg-soft: #1e293b;
+  --glass-border: #334155;
+  --glass-border-soft: #1e293b;
+  
+  /* Hairline and shadows */
+  --hairline: #334155;
+  --shadow-glass: 0 4px 8px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-glass-lg: 0 12px 28px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+
+  /* Deep dark page background */
+  --page-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+}
+
+/* ---------- Interface Density ---------- */
+:root[data-density="compact"] {
+  font-size: 14px;
+}
+
+/* ---------- Animations Toggle ---------- */
+:root[data-animations="disabled"] *,
+:root[data-animations="disabled"] *::before,
+:root[data-animations="disabled"] *::after {
+  animation: none !important;
+  transition: none !important;
 }
 
 * {
@@ -45,12 +98,13 @@ body {
   margin: 0;
   background: var(--page-gradient);
   background-attachment: fixed;
+  color: var(--text-body);
 }
 
 #root {
   min-height: 100svh;
 }
 
-h1, h2, p {
+h1, h2, h3, p {
   margin: 0;
 }

@@ -10,14 +10,17 @@ import Settings from './pages/Settings'
 import CaseFile from './pages/CaseFile'
 import Clearance from './pages/Clearance'
 import ClaimsDetail from './pages/ClaimsDetail'
+import StartupScreen from './components/StartupScreen'
 import './App.css'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
+    <>
+      <StartupScreen />
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-      <Route element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/queue" element={<Queue />} />
@@ -34,5 +37,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }

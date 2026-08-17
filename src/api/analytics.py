@@ -27,12 +27,66 @@ from __future__ import annotations
 import numpy as np
 from fastapi import APIRouter, HTTPException, Query
 
+import pandas as pd
+from src.api.claims import get_claims_df
 from src.api.shap_explain import DISPLAY_NAMES, compute_full_shap, get_feature_cols, is_loaded
 from src.rules.engine import get_engine
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 TOP_N_SHAP_FEATURES = 10
+
+
+@router.get("/claims-by-month")
+def get_claims_by_month():
+    claims_df = get_claims_df()
+    if claims_df is None or claims_df.empty:
+        raise HTTPException(status_code=503, detail="Claims data not loaded")
+
+    df = claims_df.dropna(subset=["ClaimStartDt"]).copy()
+    df["month"] = df["ClaimStartDt"].dt.strftime("%Y-%m")
+    df["month_label"] = df["ClaimStartDt"].dt.strftime("%b %Y")
+
+    grouped = df.groupby(["month", "month_label"]).size().reset_index(name="claims")
+    grouped = grouped.sort_values("month")
+
+    return [
+        {
+            "month": row["month"],
+            "month_label": row["month_label"],
+            "claims": int(row["claims"]),
+        }
+        for _, row in grouped.iterrows()
+    ]
+
+
+@router.get("/providers-by-state")
+def get_providers_by_state():
+    claims_df = get_claims_df()
+    if claims_df is None or claims_df.empty:
+        raise HTTPException(status_code=503, detail="Claims data not loaded")
+
+    if "State" not in claims_df.columns:
+        return []
+
+    # Get state for each provider
+    prov_states = (
+        claims_df.groupby("Provider")["State"]
+        .agg(lambda x: x.mode()[0] if not x.mode().empty else (x.dropna().iloc[0] if not x.dropna().empty else "Unknown"))
+        .reset_index()
+    )
+
+    counts = prov_states["State"].value_counts().reset_index()
+    counts.columns = ["state", "providers"]
+    counts = counts.sort_values("providers", ascending=False)
+
+    return [
+        {
+            "state": f"State {row['state']}" if str(row["state"]).isdigit() else str(row["state"]),
+            "providers": int(row["providers"]),
+        }
+        for _, row in counts.iterrows()
+    ]
 
 
 def _parse_provider_ids(provider_ids: str) -> list[str]:
@@ -59,6 +113,7 @@ def get_rule_fire_rates(provider_ids: str = Query(..., description="Comma-separa
 
     fired_counts = {rule.rule_id: 0 for rule in engine.enabled_rules}
     rule_meta = {rule.rule_id: rule for rule in engine.enabled_rules}
+    provider_fired_counts = {}
 
     valid_count = 0
     for provider_id in ids:
@@ -66,7 +121,9 @@ def get_rule_fire_rates(provider_ids: str = Query(..., description="Comma-separa
             continue  # skip unknown IDs rather than fail the whole batch
         valid_count += 1
         evidence = engine.evidence_for_provider(provider_id)  # cached, not recomputed
-        for finding in evidence["findings"]:
+        findings = evidence.get("findings", [])
+        provider_fired_counts[provider_id] = len(findings)
+        for finding in findings:
             fired_counts[finding["rule_id"]] += 1
 
     rules_out = [
@@ -81,7 +138,11 @@ def get_rule_fire_rates(provider_ids: str = Query(..., description="Comma-separa
     ]
     rules_out.sort(key=lambda r: r["fire_rate"], reverse=True)
 
-    return {"total_providers": valid_count, "rules": rules_out}
+    return {
+        "total_providers": valid_count,
+        "rules": rules_out,
+        "provider_fired_counts": provider_fired_counts,
+    }
 
 
 @router.get("/shap-importance")

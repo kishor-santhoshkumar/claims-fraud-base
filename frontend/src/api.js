@@ -261,3 +261,43 @@ export async function getShapImportance(providerIds) {
   }
   return data
 }
+
+// Batch aggregate: GET /analytics/claims-by-month
+export async function getClaimsByMonth() {
+  const url = `${API_BASE_URL}/analytics/claims-by-month`
+  let response
+  try {
+    response = await fetch(url)
+  } catch {
+    const err = new Error('Could not reach the backend. Check your connection and try again.')
+    err.status = null
+    throw err
+  }
+  const data = await parseJsonSafe(response)
+  if (!response.ok) {
+    const err = new Error(data?.detail || `Request failed (HTTP ${response.status})`)
+    err.status = response.status
+    throw err
+  }
+  return data
+}
+
+// Batch aggregate: GET /analytics/providers-by-state
+export async function getProvidersByState() {
+  const url = `${API_BASE_URL}/analytics/providers-by-state`
+  let response
+  try {
+    response = await fetch(url)
+  } catch {
+    const err = new Error('Could not reach the backend. Check your connection and try again.')
+    err.status = null
+    throw err
+  }
+  const data = await parseJsonSafe(response)
+  if (!response.ok) {
+    const err = new Error(data?.detail || `Request failed (HTTP ${response.status})`)
+    err.status = response.status
+    throw err
+  }
+  return data
+}
